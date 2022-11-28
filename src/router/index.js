@@ -14,7 +14,7 @@ const routes = Object.values(PATH_CONSTANTS).map((config) => ({
 }));
 
 const router = new VueRouter({
-  mode: "history",
+  mode: "hash", // "history", "hash", "abstract"
   base: process.env.BASE_URL,
   routes,
 });
