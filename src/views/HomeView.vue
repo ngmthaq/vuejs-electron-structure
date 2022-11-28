@@ -14,8 +14,5 @@ export default {
   components: {
     HelloWorld,
   },
-  created() {
-    console.log(this._pathConst);
-  }
 };
 </script>
