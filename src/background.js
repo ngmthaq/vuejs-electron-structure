@@ -3,15 +3,9 @@
 import { app, protocol, BrowserWindow } from "electron";
 import { createProtocol } from "vue-cli-plugin-electron-builder/lib";
 import installExtension, { VUEJS_DEVTOOLS } from "electron-devtools-installer";
+import BACKGROUND_CONSTANTS from "./const/background.const";
 
 const isDevelopment = process.env.NODE_ENV !== "production";
-
-const windowPaths = {
-  main: {
-    devPath: "",
-    prodPath: "index.html",
-  },
-};
 
 let windows = {};
 
@@ -63,8 +57,8 @@ app.on("activate", () => {
   // dock icon is clicked and there are no other windows open.
   if (windows["main"] === undefined) {
     windows["main"] = createWindow(
-      windowPaths.main.devPath,
-      windowPaths.main.prodPath
+      BACKGROUND_CONSTANTS.windowPaths.main.devPath,
+      BACKGROUND_CONSTANTS.windowPaths.main.prodPath
     );
   }
 });
@@ -87,8 +81,8 @@ app.on("ready", async () => {
   }
 
   windows["main"] = createWindow(
-    windowPaths.main.devPath,
-    windowPaths.main.prodPath
+    BACKGROUND_CONSTANTS.windowPaths.main.devPath,
+    BACKGROUND_CONSTANTS.windowPaths.main.prodPath
   );
 });
 
