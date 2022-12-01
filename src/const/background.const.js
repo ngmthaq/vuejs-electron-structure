@@ -3,6 +3,7 @@ const BACKGROUND_CONSTANTS = {
   windowHeight: 768,
   windowPaths: {
     main: {
+      name: "main",
       devPath: "",
       prodPath: "index.html",
     },
