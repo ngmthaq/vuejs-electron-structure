@@ -1,6 +1,7 @@
 "use strict";
 
-import { app, protocol, BrowserWindow } from "electron";
+import path from "path";
+import { app, protocol, BrowserWindow, Menu, Tray } from "electron";
 import { createProtocol } from "vue-cli-plugin-electron-builder/lib";
 import installExtension, { VUEJS_DEVTOOLS } from "electron-devtools-installer";
 import BACKGROUND_CONSTANTS from "./const/background.const";
@@ -8,13 +9,90 @@ import BACKGROUND_CONSTANTS from "./const/background.const";
 const isDevelopment = process.env.NODE_ENV !== "production";
 
 let windows = {};
+let isForceToClose = false;
+let tray = null;
 
 // Scheme must be registered before the app is ready
 protocol.registerSchemesAsPrivileged([
   { scheme: "app", privileges: { secure: true, standard: true } },
 ]);
 
-async function createWindow(devPath, prodPath) {
+async function createMainWindow({ name, devPath, prodPath }) {
+  // Create the browser window.
+  let window = new BrowserWindow({
+    width: BACKGROUND_CONSTANTS.windowWidth,
+    height: BACKGROUND_CONSTANTS.windowHeight,
+    webPreferences: {
+      // Use pluginOptions.nodeIntegration, leave this alone
+      // See nklayman.github.io/vue-cli-plugin-electron-builder/guide/security.html#node-integration for more info
+      nodeIntegration: process.env.ELECTRON_NODE_INTEGRATION,
+      contextIsolation: !process.env.ELECTRON_NODE_INTEGRATION,
+    },
+  });
+
+  // Config tray icon
+  if (process.env.WEBPACK_DEV_SERVER_URL) {
+    tray = new Tray(path.resolve(__dirname, "../public/favicon.ico"));
+  } else {
+    tray = new Tray(path.resolve(__dirname, "./favicon.ico"));
+  }
+
+  // Trigger double click on tray icon
+  tray.on("double-click", function () {
+    window.show();
+  });
+
+  // Set titile and tooltip
+  tray.setTitle("App name");
+  tray.setToolTip("App name");
+
+  // Config tray menu
+  tray.setContextMenu(
+    Menu.buildFromTemplate([
+      {
+        label: "Open",
+        click: function () {
+          window.show();
+        },
+      },
+      {
+        label: "Quit",
+        click: function () {
+          isForceToClose = true;
+          window.close();
+        },
+      },
+    ])
+  );
+
+  if (process.env.WEBPACK_DEV_SERVER_URL) {
+    // Load the url of the dev server if in development mode
+    window.setIcon(path.resolve(__dirname, "../public/favicon.ico"));
+    await window.loadURL(process.env.WEBPACK_DEV_SERVER_URL + devPath);
+
+    // Auto open devtools
+    // if (!process.env.IS_TEST) window.webContents.openDevTools();
+  } else {
+    // Load the index.html when not in development
+    window.setIcon(path.resolve(__dirname, "./favicon.ico"));
+    window.loadURL("app://./" + prodPath);
+  }
+
+  window.on("close", (e) => {
+    if (isForceToClose) {
+      app.quit();
+    } else {
+      e.preventDefault();
+      window.hide();
+    }
+  });
+
+  console.log(">>> Open " + name + " window ");
+
+  return window;
+}
+
+async function createChildWindow({ name, devPath, prodPath }) {
   // Create the browser window.
   let window = new BrowserWindow({
     width: BACKGROUND_CONSTANTS.windowWidth,
@@ -29,25 +107,45 @@ async function createWindow(devPath, prodPath) {
 
   if (process.env.WEBPACK_DEV_SERVER_URL) {
     // Load the url of the dev server if in development mode
+    window.setIcon(path.resolve(__dirname, "../public/favicon.ico"));
     await window.loadURL(process.env.WEBPACK_DEV_SERVER_URL + devPath);
-    if (!process.env.IS_TEST) window.webContents.openDevTools();
+    
+    // Auto open devtools
+    // if (!process.env.IS_TEST) window.webContents.openDevTools();
   } else {
     // Load the index.html when not in development
+    window.setIcon(path.resolve(__dirname, "./favicon.ico"));
     window.loadURL("app://./" + prodPath);
   }
 
-  window.on("closed", () => {
-    window = null;
+  window.on("close", () => {
+    window.close();
+    delete windows[name];
   });
+
+  console.log(">>> Open " + name + " window ");
 
   return window;
 }
 
+// Create new child window
+async function createNewWindow({ name, devPath, prodPath }) {
+  let names = Object.keys(windows);
+  if (names.includes(name)) {
+    throw new Error("Child window name is existed");
+  } else {
+    windows[name] = await createChildWindow({ name, devPath, prodPath });
+  }
+}
+
 // Quit when all windows are closed.
-app.on("window-all-closed", () => {
+app.on("window-all-closed", (e) => {
   // On macOS it is common for applications and their menu bar
   // to stay active until the user quits explicitly with Cmd + Q
   if (process.platform !== "darwin") {
+    console.log(
+      ">>> Trigger event 'window-all-closed' and condition !== darwin"
+    );
     app.quit();
   }
 });
@@ -55,10 +153,9 @@ app.on("window-all-closed", () => {
 app.on("activate", () => {
   // On macOS it's common to re-create a window in the app when the
   // dock icon is clicked and there are no other windows open.
-  if (windows["main"] === undefined) {
-    windows["main"] = createWindow(
-      BACKGROUND_CONSTANTS.windowPaths.main.devPath,
-      BACKGROUND_CONSTANTS.windowPaths.main.prodPath
+  if (windows[BACKGROUND_CONSTANTS.windowPaths.main.name] === undefined) {
+    windows[BACKGROUND_CONSTANTS.windowPaths.main.name] = createMainWindow(
+      BACKGROUND_CONSTANTS.windowPaths.main
     );
   }
 });
@@ -72,7 +169,7 @@ app.on("ready", async () => {
       // Install Vue Devtools
       await installExtension(VUEJS_DEVTOOLS);
     } catch (e) {
-      console.error("Vue Devtools failed to install: ", e.toString());
+      console.error(">>> Vue Devtools failed to install: ", e.toString());
     }
   }
 
@@ -80,9 +177,8 @@ app.on("ready", async () => {
     createProtocol("app");
   }
 
-  windows["main"] = createWindow(
-    BACKGROUND_CONSTANTS.windowPaths.main.devPath,
-    BACKGROUND_CONSTANTS.windowPaths.main.prodPath
+  windows[BACKGROUND_CONSTANTS.windowPaths.main.name] = createMainWindow(
+    BACKGROUND_CONSTANTS.windowPaths.main
   );
 });
 
@@ -91,11 +187,13 @@ if (isDevelopment) {
   if (process.platform === "win32") {
     process.on("message", (data) => {
       if (data === "graceful-exit") {
+        console.log(">>> Trigger 'graceful-exit' message");
         app.quit();
       }
     });
   } else {
     process.on("SIGTERM", () => {
+      console.log(">>> Trigger 'SIGTERM' event");
       app.quit();
     });
   }
