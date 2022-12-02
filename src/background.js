@@ -11,6 +11,7 @@ const isDevelopment = process.env.NODE_ENV !== "production";
 
 let windows = {};
 let isForceToClose = false;
+let isHideOnTaskbar = false;
 let tray = null;
 
 // Scheme must be registered before the app is ready
@@ -40,6 +41,7 @@ async function createMainWindow({ name, devPath, prodPath }) {
   // Trigger double click on tray icon
   tray.on("double-click", function () {
     window.show();
+    isHideOnTaskbar = false;
   });
 
   // Set titile and tooltip
@@ -53,6 +55,7 @@ async function createMainWindow({ name, devPath, prodPath }) {
         label: "Open",
         click: function () {
           window.show();
+          isHideOnTaskbar = false;
         },
       },
       {
@@ -85,6 +88,7 @@ async function createMainWindow({ name, devPath, prodPath }) {
     } else {
       e.preventDefault();
       window.hide();
+      isHideOnTaskbar = true;
     }
   });
 
