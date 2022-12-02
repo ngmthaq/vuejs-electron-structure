@@ -9,7 +9,10 @@ import PATH_CONSTANTS from "./const/path.const";
 import KEY_CONSTANTS from "./const/key.const";
 import BACKGROUND_CONSTANTS from "./const/background.const";
 import * as filters from "./filters";
+import { BootstrapVue, IconsPlugin } from "bootstrap-vue";
 import "./registerServiceWorker";
+import "bootstrap/dist/css/bootstrap.css";
+import "bootstrap-vue/dist/bootstrap-vue.css";
 
 // Vue configs
 Vue.config.productionTip = false;
@@ -28,6 +31,10 @@ Vue.prototype._eventBus = Bus;
 Object.entries(filters).forEach(([name, func]) => {
   Vue.filter(name, func);
 });
+
+// Config Bootstrap Vue
+Vue.use(BootstrapVue);
+Vue.use(IconsPlugin);
 
 const app = new Vue({
   router: router,
