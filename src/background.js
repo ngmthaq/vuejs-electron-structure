@@ -14,9 +14,7 @@ let isForceToClose = false;
 let tray = null;
 
 // Scheme must be registered before the app is ready
-protocol.registerSchemesAsPrivileged([
-  { scheme: "app", privileges: { secure: true, standard: true } },
-]);
+protocol.registerSchemesAsPrivileged([{ scheme: "app", privileges: { secure: true, standard: true } }]);
 
 async function createMainWindow({ name, devPath, prodPath }) {
   // Create the browser window.
@@ -64,7 +62,7 @@ async function createMainWindow({ name, devPath, prodPath }) {
           window.close();
         },
       },
-    ])
+    ]),
   );
 
   if (process.env.WEBPACK_DEV_SERVER_URL) {
@@ -81,7 +79,7 @@ async function createMainWindow({ name, devPath, prodPath }) {
     autoUpdater.checkForUpdatesAndNotify();
   }
 
-  window.on("close", (e) => {
+  window.on("close", e => {
     if (isForceToClose) {
       app.quit();
     } else {
@@ -143,13 +141,11 @@ async function createNewWindow({ name, devPath, prodPath }) {
 }
 
 // Quit when all windows are closed.
-app.on("window-all-closed", (e) => {
+app.on("window-all-closed", e => {
   // On macOS it is common for applications and their menu bar
   // to stay active until the user quits explicitly with Cmd + Q
   if (process.platform !== "darwin") {
-    console.log(
-      ">>> Trigger event 'window-all-closed' and condition !== darwin"
-    );
+    console.log(">>> Trigger event 'window-all-closed' and condition !== darwin");
     app.quit();
   }
 });
@@ -158,9 +154,7 @@ app.on("activate", () => {
   // On macOS it's common to re-create a window in the app when the
   // dock icon is clicked and there are no other windows open.
   if (windows[BACKGROUND_CONSTANTS.windowPaths.main.name] === undefined) {
-    windows[BACKGROUND_CONSTANTS.windowPaths.main.name] = createMainWindow(
-      BACKGROUND_CONSTANTS.windowPaths.main
-    );
+    windows[BACKGROUND_CONSTANTS.windowPaths.main.name] = createMainWindow(BACKGROUND_CONSTANTS.windowPaths.main);
   }
 });
 
@@ -181,15 +175,13 @@ app.on("ready", async () => {
     createProtocol("app");
   }
 
-  windows[BACKGROUND_CONSTANTS.windowPaths.main.name] = createMainWindow(
-    BACKGROUND_CONSTANTS.windowPaths.main
-  );
+  windows[BACKGROUND_CONSTANTS.windowPaths.main.name] = createMainWindow(BACKGROUND_CONSTANTS.windowPaths.main);
 });
 
 // Exit cleanly on request from parent process in development mode.
 if (isDevelopment) {
   if (process.platform === "win32") {
-    process.on("message", (data) => {
+    process.on("message", data => {
       if (data === "graceful-exit") {
         console.log(">>> Trigger 'graceful-exit' message");
         app.quit();

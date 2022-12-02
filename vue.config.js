@@ -6,12 +6,14 @@ module.exports = defineConfig({
   },
   pluginOptions: {
     electronBuilder: {
-      preload: { preload: "src/preload.js" },
+      preload: "src/preload.js",
       builderOptions: {
         publish: ["github"],
+        extraResources: ["src"],
         appId: "vue.electron.com",
         productName: "Vue Electron Application",
         win: {
+          publisherName: "ngmthaq",
           icon: "dist_electron/bundled/favicon.ico",
           target: "nsis",
         },
