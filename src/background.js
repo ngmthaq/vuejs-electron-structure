@@ -4,6 +4,7 @@ import path from "path";
 import { app, protocol, BrowserWindow, Menu, Tray } from "electron";
 import { createProtocol } from "vue-cli-plugin-electron-builder/lib";
 import installExtension, { VUEJS_DEVTOOLS } from "electron-devtools-installer";
+import { autoUpdater } from "electron-updater";
 import BACKGROUND_CONSTANTS from "./const/background.const";
 
 const isDevelopment = process.env.NODE_ENV !== "production";
@@ -25,6 +26,7 @@ async function createMainWindow({ name, devPath, prodPath }) {
     webPreferences: {
       // Use pluginOptions.nodeIntegration, leave this alone
       // See nklayman.github.io/vue-cli-plugin-electron-builder/guide/security.html#node-integration for more info
+      preload: path.join(__dirname, "preload.js"),
       nodeIntegration: process.env.ELECTRON_NODE_INTEGRATION,
       contextIsolation: !process.env.ELECTRON_NODE_INTEGRATION,
     },
@@ -76,6 +78,7 @@ async function createMainWindow({ name, devPath, prodPath }) {
     // Load the index.html when not in development
     window.setIcon(path.resolve(__dirname, "./favicon.ico"));
     window.loadURL("app://./" + prodPath);
+    autoUpdater.checkForUpdatesAndNotify();
   }
 
   window.on("close", (e) => {
@@ -100,6 +103,7 @@ async function createChildWindow({ name, devPath, prodPath }) {
     webPreferences: {
       // Use pluginOptions.nodeIntegration, leave this alone
       // See nklayman.github.io/vue-cli-plugin-electron-builder/guide/security.html#node-integration for more info
+      preload: path.join(__dirname, "preload.js"),
       nodeIntegration: process.env.ELECTRON_NODE_INTEGRATION,
       contextIsolation: !process.env.ELECTRON_NODE_INTEGRATION,
     },
@@ -109,7 +113,7 @@ async function createChildWindow({ name, devPath, prodPath }) {
     // Load the url of the dev server if in development mode
     window.setIcon(path.resolve(__dirname, "../public/favicon.ico"));
     await window.loadURL(process.env.WEBPACK_DEV_SERVER_URL + devPath);
-    
+
     // Auto open devtools
     // if (!process.env.IS_TEST) window.webContents.openDevTools();
   } else {
