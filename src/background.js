@@ -1,7 +1,7 @@
 "use strict";
 
 import path from "path";
-import { app, protocol, BrowserWindow, Menu, Tray } from "electron";
+import { app, protocol, BrowserWindow, Menu, Tray, ipcMain } from "electron";
 import { createProtocol } from "vue-cli-plugin-electron-builder/lib";
 import installExtension, { VUEJS_DEVTOOLS } from "electron-devtools-installer";
 import { autoUpdater } from "electron-updater";
@@ -94,6 +94,10 @@ async function createMainWindow({ name, devPath, prodPath }) {
 
   console.log(">>> Open " + name + " window ");
 
+  ipcMain.on("createNewWindow", (e, name, devPath, prodPath) => {
+    createNewWindow(e, name, devPath, prodPath, window);
+  });
+
   return window;
 }
 
@@ -125,7 +129,6 @@ async function createChildWindow({ name, devPath, prodPath }) {
   }
 
   window.on("close", () => {
-    window.close();
     delete windows[name];
   });
 
@@ -135,10 +138,10 @@ async function createChildWindow({ name, devPath, prodPath }) {
 }
 
 // Create new child window
-async function createNewWindow({ name, devPath, prodPath }) {
+async function createNewWindow(_event, name, devPath, prodPath, window) {
   let names = Object.keys(windows);
   if (names.includes(name)) {
-    throw new Error("Child window name is existed");
+    window.webContents.send("createNewWindowFailure", { message: "Cannot open new window, window already existed" });
   } else {
     windows[name] = await createChildWindow({ name, devPath, prodPath });
   }

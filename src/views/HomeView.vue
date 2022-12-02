@@ -10,6 +10,7 @@
 // @ is an alias to /src
 import HelloWorld from "@/components/HelloWorld.vue";
 import { createWindowNotification } from "@/utils"
+import BACKGROUND_CONSTANTS from "@/const/background.const";
 
 export default {
   name: "HomeView",
@@ -20,6 +21,7 @@ export default {
 
   methods: {
     openNotification() {
+      window.electronFunctions.createNewWindow(BACKGROUND_CONSTANTS.windowPaths.child);
       createWindowNotification({
         title: "Notification title",
         body: "Notification body",

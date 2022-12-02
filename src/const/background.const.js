@@ -7,6 +7,11 @@ const BACKGROUND_CONSTANTS = {
       devPath: "",
       prodPath: "index.html",
     },
+    child: {
+      name: "child",
+      devPath: "",
+      prodPath: "index.html",
+    },
   },
 };
 
