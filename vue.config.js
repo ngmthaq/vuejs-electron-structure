@@ -6,6 +6,7 @@ module.exports = defineConfig({
   },
   pluginOptions: {
     electronBuilder: {
+      preload: { preload: "src/preload.js" },
       builderOptions: {
         publish: ["github"],
         appId: "vue.electron.com",
