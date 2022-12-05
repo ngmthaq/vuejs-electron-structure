@@ -7,6 +7,7 @@ module.exports = defineConfig({
   pluginOptions: {
     electronBuilder: {
       preload: "src/preload.js",
+      externals: ["sqlite", "sqlite3"],
       builderOptions: {
         publish: ["github"],
         extraResources: ["src"],
