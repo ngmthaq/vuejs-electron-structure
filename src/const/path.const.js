@@ -1,5 +1,5 @@
 import HomeView from "../views/HomeView.vue";
-import AboutView from "../views/AboutView.vue";
+import BookingView from "../views/BookingView.vue";
 
 const PATH_CONSTANTS = {
   home: {
@@ -8,11 +8,11 @@ const PATH_CONSTANTS = {
     component: HomeView,
     title: "Homepage",
   },
-  about: {
-    name: "about",
-    path: "/about",
-    component: AboutView,
-    title: "About",
+  booking: {
+    name: "booking",
+    path: "/booking",
+    component: BookingView,
+    title: "Booking",
   },
 };
 
