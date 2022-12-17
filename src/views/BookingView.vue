@@ -1,20 +1,18 @@
 <template>
-    <MainLayoutVue>
-        <p>Booking</p>
-    </MainLayoutVue>
+  <MainLayoutVue>
+    <p v-for="i in 100" :key="i">Booking</p>
+  </MainLayoutVue>
 </template>
-  
+
 <script>
 // @ is an alias to /src
-import MainLayoutVue from '@/layouts/MainLayout.vue';
+import MainLayoutVue from "@/layouts/MainLayout.vue";
 
 export default {
-    name: "BookingView",
+  name: "BookingView",
 
-    components: {
-        MainLayoutVue,
-    },
-
-}
+  components: {
+    MainLayoutVue,
+  },
+};
 </script>
-  
